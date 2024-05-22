@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model BOOKINGTABLE {
+  bookingID    Int           @id @default(autoincrement())
+  userName     String        @db.VarChar(10)
+  fullName     String        @db.VarChar(20)
+  adress       String        @db.VarChar(255)
+  phone        String        @db.VarChar(12)
+  timeBook     DateTime      @db.DateTime(0)
+  note         String?       @db.VarChar(255)
+  isDeleted    Boolean
+  voucherID    String?       @db.VarChar(8)
+  USERTABLE    USERTABLE     @relation(fields: [userName], references: [userName], onDelete: NoAction, onUpdate: NoAction, map: "BOOKINGTABLE_ibfk_1")
+  VOUCHERTABLE VOUCHERTABLE? @relation(fields: [voucherID], references: [voucherID], onDelete: NoAction, onUpdate: NoAction, map: "BOOKINGTABLE_ibfk_2")
+
+  @@index([userName], map: "userName")
+  @@index([voucherID], map: "voucherID")
+}
+
+model EVENT {
+  id          Int      @id @default(autoincrement())
+  dataEvent   String   @db.VarChar(255)
+  expiredDate DateTime @db.DateTime(0)
+}
+
+model FEEDBACK {
+  id          Int       @id @default(autoincrement())
+  imgFeedback String    @db.VarChar(200)
+  userName    String    @db.VarChar(10)
+  USERTABLE   USERTABLE @relation(fields: [userName], references: [userName], onDelete: NoAction, onUpdate: NoAction, map: "FEEDBACK_ibfk_1")
+
+  @@index([userName], map: "userName")
+}
+
+model USERTABLE {
+  userName     String         @id @db.VarChar(10)
+  password     String         @db.VarChar(255)
+  phone        String         @db.VarChar(12)
+  address      String?        @db.VarChar(255)
+  dob          DateTime       @db.DateTime(0)
+  roleID       Int
+  dayCreated   DateTime       @db.DateTime(0)
+  BOOKINGTABLE BOOKINGTABLE[]
+  FEEDBACK     FEEDBACK[]
+}
+
+model VOUCHERTABLE {
+  voucherID    String         @id @db.VarChar(8)
+  voucherName  String         @db.VarChar(20)
+  expiredDate  DateTime       @db.DateTime(0)
+  isExpired    Boolean
+  BOOKINGTABLE BOOKINGTABLE[]
+}
+
+model ROLE {
+  id       Int    @id @default(autoincrement())
+  roleName String @db.VarChar(20)
+}
