@@ -38,21 +38,11 @@ let UsersController = class UsersController {
             (0, main_1.failed)(res);
         }
     }
-    async createUser(res, req) {
-        try {
-            const { userName, phone, dob, password, address } = req.body;
-            const data = await this.userService.createUser({
-                userName,
-                phone,
-                dob,
-                password,
-                address,
-            });
-            (0, main_1.success)(res, data);
-        }
-        catch (e) {
-            (0, main_1.failed)(res, "Username is exits...");
-        }
+    async createUserHandler(res, req) {
+        return await this.userService.createUser(res, req);
+    }
+    async loginUserHandler(res, req) {
+        return await this.userService.loginUser(res, req);
     }
 };
 exports.UsersController = UsersController;
@@ -78,7 +68,15 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
-], UsersController.prototype, "createUser", null);
+], UsersController.prototype, "createUserHandler", null);
+__decorate([
+    (0, common_1.Post)("login"),
+    __param(0, (0, common_1.Res)({ passthrough: true })),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "loginUserHandler", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)("users"),
     __metadata("design:paramtypes", [users_service_1.UsersService])

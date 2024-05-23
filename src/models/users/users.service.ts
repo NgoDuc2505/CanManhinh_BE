@@ -1,8 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { IUser, IUserSecure, IUserCreateData } from "src/interfaces/interfaces";
+import { IUserSecure } from "src/interfaces/interfaces";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
-
+import { Request, Response } from "express";
+import { failureFl, serverErrorFl, successFl } from "src/Response_config/main";
+import { createToken } from "src/Global_services/jwtToken_sv";
+import { TOKEN } from "src/const/const.type";
 const prisma = new PrismaClient();
 
 @Injectable()
@@ -37,9 +40,9 @@ export class UsersService {
       },
     });
     if (data) {
-      return true;
+      return {data, isExit: true};
     }
-    return false;
+    return {data: null, isExit: false};
   }
 
   async getUser(id: string): Promise<IUserSecure[] | null> {
@@ -71,15 +74,14 @@ export class UsersService {
     }
   }
 
-  async createUser(data: IUserCreateData): Promise<IUserSecure> {
-    const { userName, phone, dob, password, address } = data;
+  async createUser(res: Response, req: Request) {
+    const { userName, phone, dob, password, address } = req.body;
     const hashedPass = await this.hashPass(password);
     const currentDate = new Date().toISOString();
-    // const fullDateData = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}T${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}.000Z`;
     try {
-      const isExited = await this.isUserExited(userName);
-      if (!isExited) {
-        const rs = prisma.uSERTABLE.create({
+      const {isExit} = await this.isUserExited(userName);
+      if (!isExit) {
+        const rs = await prisma.uSERTABLE.create({
           data: {
             userName,
             phone,
@@ -90,12 +92,36 @@ export class UsersService {
             address,
           },
         });
-        return rs;
-      }else{
-        throw new Error("User has exited !")
+        successFl(res,rs,"Success signup...");
+      } else {
+        failureFl(res,400,"Exited username...!");
       }
     } catch (e) {
-      throw new Error(e);
+      console.log(e)
+      serverErrorFl(res);
+    }
+  }
+
+  async loginUser(res: Response, req: Request) {
+    const {userName, passWord} = req.body;
+    try{
+      const {isExit, data} = await this.isUserExited(userName);
+      if(isExit){
+        const {password} = data;
+        const isVerify = await this.checkPass(passWord,password);
+        if(isVerify){
+          const token = createToken(data);
+          res.cookie(TOKEN,token,{httpOnly: true, signed: false, path:"/",secure: true, maxAge: 60*60*1000});
+          successFl(res,{token,roleId: data.roleID},"Success login...");
+        }else{
+          failureFl(res,400,"Invalid password...!");
+        }
+      }else{
+        failureFl(res,400,"Invalid username...!");
+      }
+    }catch(e){
+      console.log(e)
+      serverErrorFl(res);
     }
   }
 }

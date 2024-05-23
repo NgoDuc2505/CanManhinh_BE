@@ -1,4 +1,6 @@
-import { IUserSecure, IUserCreateData } from "src/interfaces/interfaces";
+/// <reference types="cookie-parser" />
+import { IUserSecure } from "src/interfaces/interfaces";
+import { Request, Response } from "express";
 export declare class UsersService {
     private salt;
     private exclude;
@@ -7,5 +9,6 @@ export declare class UsersService {
     private isUserExited;
     getUser(id: string): Promise<IUserSecure[] | null>;
     getAllUser(): Promise<IUserSecure[] | null>;
-    createUser(data: IUserCreateData): Promise<IUserSecure>;
+    createUser(res: Response, req: Request): Promise<void>;
+    loginUser(res: Response, req: Request): Promise<void>;
 }

@@ -28,20 +28,15 @@ export class UsersController {
   }
 
   @Post("create")
-  async createUser(@Res() res: Response, @Req() req: Request) {
-    try {
-      const { userName, phone, dob, password, address } = req.body;
-      const data = await this.userService.createUser({
-        userName,
-        phone,
-        dob,
-        password,
-        address,
-      });
-      success(res, data);
-    } catch (e) {
-      // console.log(e);
-      failed(res, "Username is exits...");
-    }
+  async createUserHandler(@Res() res: Response, @Req() req: Request) {
+    return await this.userService.createUser(res, req);
+  }
+
+  @Post("login")
+  async loginUserHandler(
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+  ) {
+    return await this.userService.loginUser(res, req);
   }
 }

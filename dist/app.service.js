@@ -10,35 +10,7 @@ exports.AppService = void 0;
 const common_1 = require("@nestjs/common");
 let AppService = class AppService {
     getHello() {
-        return "Hello World!";
-    }
-    getTest() {
-        return ["test this API", "test array"];
-    }
-    getObject() {
-        try {
-            const data = {
-                name: "ngo minh duc",
-                age: 22
-            };
-            return data;
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }
-    testParam(id) {
-        try {
-            const data = {
-                name: "ngo minh duc",
-                age: 22,
-                id: id
-            };
-            return data;
-        }
-        catch (e) {
-            console.log(e);
-        }
+        return "Sản phẩm thuộc về Ngô Minh Đức - Nguyễn Huy Hoàng.";
     }
 };
 exports.AppService = AppService;
