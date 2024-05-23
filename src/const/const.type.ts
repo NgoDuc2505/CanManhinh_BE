@@ -1,13 +1,3 @@
-type objectTest = {
-  name: string;
-  age: number;
-};
+const TOKEN = "token_login";
 
-type objectTestAndId = {
-  name: string;
-  age: number;
-  id: string;
-};
-
-
-export { objectTest, objectTestAndId };
+export {TOKEN}
