@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Req, Res } from "@nestjs/common";
+import { Controller, Get, Header, Post, Put, Req, Res } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { Response, Request } from "express";
 import { success, failed } from "src/Response_config/main";
@@ -8,13 +8,8 @@ export class UsersController {
   constructor(private userService: UsersService) {}
 
   @Get(":idUser")
-  async getDetailUser(@Res() res: Response, @Param("idUser") id: string) {
-    try {
-      const data = await this.userService.getUser(id);
-      success(res, data);
-    } catch (e) {
-      failed(res);
-    }
+  async getDetailUser(@Res() res: Response, @Req() req: Request) {
+    return await this.userService.getUser(res, req);
   }
 
   @Get()
@@ -38,5 +33,11 @@ export class UsersController {
     @Req() req: Request,
   ) {
     return await this.userService.loginUser(res, req);
+  }
+
+  @Put("updateUser/:usrName")
+  @Header("content-type", "application/json")
+  async updateUserHandler(@Res() res: Response, @Req() req: Request) {
+    return this.userService.updateUser(res, req);
   }
 }

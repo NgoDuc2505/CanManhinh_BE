@@ -7,6 +7,10 @@ interface IUser {
     roleID: number;
     dayCreated: Date;
 }
+interface IUserTokenDecode extends IUser {
+    iat: number;
+    exp: number;
+}
 interface IUserSecure {
     userName: string;
     phone: string;
@@ -22,4 +26,4 @@ interface IUserCreateData {
     address: string;
     dob: Date;
 }
-export { IUser, IUserSecure, IUserCreateData };
+export { IUser, IUserSecure, IUserCreateData, IUserTokenDecode };

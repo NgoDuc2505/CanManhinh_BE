@@ -1,2 +1,3 @@
 declare const TOKEN = "token_login";
-export { TOKEN };
+declare const TOKEN_HEADER = "token";
+export { TOKEN, TOKEN_HEADER };
