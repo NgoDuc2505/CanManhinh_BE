@@ -20,14 +20,8 @@ let UsersController = class UsersController {
     constructor(userService) {
         this.userService = userService;
     }
-    async getDetailUser(res, id) {
-        try {
-            const data = await this.userService.getUser(id);
-            (0, main_1.success)(res, data);
-        }
-        catch (e) {
-            (0, main_1.failed)(res);
-        }
+    async getDetailUser(res, req) {
+        return await this.userService.getUser(res, req);
     }
     async getAllUser(res) {
         try {
@@ -44,14 +38,17 @@ let UsersController = class UsersController {
     async loginUserHandler(res, req) {
         return await this.userService.loginUser(res, req);
     }
+    async updateUserHandler(res, req) {
+        return this.userService.updateUser(res, req);
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Get)(":idUser"),
     __param(0, (0, common_1.Res)()),
-    __param(1, (0, common_1.Param)("idUser")),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getDetailUser", null);
 __decorate([
@@ -77,6 +74,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "loginUserHandler", null);
+__decorate([
+    (0, common_1.Put)("updateUser/:usrName"),
+    (0, common_1.Header)("content-type", "application/json"),
+    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "updateUserHandler", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)("users"),
     __metadata("design:paramtypes", [users_service_1.UsersService])
