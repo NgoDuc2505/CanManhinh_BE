@@ -3,8 +3,15 @@ import { IUserSecure, IUserTokenDecode } from "src/interfaces/interfaces";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { Request, Response } from "express";
-import { failureFl, serverErrorFl, successFl } from "src/Response_config/main";
-import { createToken, verifyToken } from "src/Global_services/jwtToken_sv";
+import {
+  failureFl,
+  serverErrorFl,
+  successFl,
+} from "src/services/Response_config/main";
+import {
+  createToken,
+  verifyToken,
+} from "src/services/Global_services/jwtToken_sv";
 import { TOKEN, TOKEN_HEADER } from "src/const/const.type";
 const prisma = new PrismaClient();
 
@@ -45,7 +52,7 @@ export class UsersService {
     return { data: null, isExit: false };
   }
 
-  private async findDetailUserByUserName(usrNm:string){
+  private async findDetailUserByUserName(usrNm: string) {
     return await prisma.uSERTABLE.findUnique({
       where: {
         userName: usrNm,

@@ -17,6 +17,7 @@ model BOOKINGTABLE {
   note         String?       @db.VarChar(255)
   isDeleted    Boolean
   voucherID    String?       @db.VarChar(8)
+  Total        Int
   USERTABLE    USERTABLE     @relation(fields: [userName], references: [userName], onDelete: NoAction, onUpdate: NoAction, map: "BOOKINGTABLE_ibfk_1")
   VOUCHERTABLE VOUCHERTABLE? @relation(fields: [voucherID], references: [voucherID], onDelete: NoAction, onUpdate: NoAction, map: "BOOKINGTABLE_ibfk_2")
 
@@ -40,26 +41,52 @@ model FEEDBACK {
 }
 
 model USERTABLE {
-  userName     String         @id @db.VarChar(10)
-  password     String         @db.VarChar(255)
-  phone        String         @db.VarChar(12)
-  address      String?        @db.VarChar(255)
-  dob          DateTime       @db.DateTime(0)
-  roleID       Int
-  dayCreated   DateTime       @db.DateTime(0)
-  BOOKINGTABLE BOOKINGTABLE[]
-  FEEDBACK     FEEDBACK[]
+  userName      String          @id @db.VarChar(10)
+  password      String          @db.VarChar(255)
+  phone         String          @db.VarChar(12)
+  address       String?         @db.VarChar(255)
+  dob           DateTime        @db.DateTime(0)
+  roleID        Int
+  dayCreated    DateTime        @db.DateTime(0)
+  BOOKINGTABLE  BOOKINGTABLE[]
+  FEEDBACK      FEEDBACK[]
+  VOUCHEROFUSER VOUCHEROFUSER[]
 }
 
 model VOUCHERTABLE {
-  voucherID    String         @id @db.VarChar(8)
-  voucherName  String         @db.VarChar(20)
-  expiredDate  DateTime       @db.DateTime(0)
-  isExpired    Boolean
-  BOOKINGTABLE BOOKINGTABLE[]
+  voucherID     String          @id @db.VarChar(20)
+  voucherName   String          @db.VarChar(20)
+  expiredDate   DateTime        @db.DateTime(0)
+  isExpired     Boolean
+  valuesVoucher String          @db.VarChar(20)
+  BOOKINGTABLE  BOOKINGTABLE[]
+  VOUCHEROFUSER VOUCHEROFUSER[]
 }
 
 model ROLE {
-  id       Int    @id @default(autoincrement())
-  roleName String @db.VarChar(20)
+  id                 Int                  @id @default(autoincrement())
+  roleName           String               @db.VarChar(20)
+  AUTHORIZATIONTABLE AUTHORIZATIONTABLE[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model VOUCHEROFUSER {
+  userName     String       @db.VarChar(10)
+  voucherID    String       @db.VarChar(8)
+  isUsed       Boolean
+  idOwn        Int          @id @default(autoincrement())
+  USERTABLE    USERTABLE    @relation(fields: [userName], references: [userName], onDelete: NoAction, onUpdate: NoAction, map: "VOUCHEROFUSER_ibfk_1")
+  VOUCHERTABLE VOUCHERTABLE @relation(fields: [voucherID], references: [voucherID], onDelete: NoAction, onUpdate: NoAction, map: "VOUCHEROFUSER_ibfk_2")
+
+  @@index([userName], map: "userName")
+  @@index([voucherID], map: "voucherID")
+}
+
+model AUTHORIZATIONTABLE {
+  AuthorId Int    @id @default(autoincrement())
+  RoleId   Int
+  PathName String @db.VarChar(30)
+  ROLE     ROLE   @relation(fields: [RoleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "AUTHORIZATIONTABLE_ibfk_1")
+
+  @@index([RoleId], map: "RoleId")
 }

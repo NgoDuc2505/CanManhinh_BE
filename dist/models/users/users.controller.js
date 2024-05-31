@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const users_service_1 = require("./users.service");
-const main_1 = require("../../Response_config/main");
+const main_1 = require("../../services/Response_config/main");
 let UsersController = class UsersController {
     constructor(userService) {
         this.userService = userService;
