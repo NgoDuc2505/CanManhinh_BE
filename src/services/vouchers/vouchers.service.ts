@@ -1,12 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { ParsedQs } from "qs";
 import { VoucherServicesInterface } from "src/interfaces/interface.services";
 import {
   failureFl,
   serverErrorFl,
   successFl,
 } from "src/services/Response_config/main";
+import { verifyToken } from "../Global_services/jwtToken_sv";
+import { TOKEN_HEADER } from "src/const/const.type";
+import { IUserTokenDecode } from "src/interfaces/interfaces";
+import checkAuth from "../Authorization/Auth";
 
 @Injectable()
 export class VouchersService implements VoucherServicesInterface {
@@ -38,48 +44,6 @@ export class VouchersService implements VoucherServicesInterface {
     return data;
   }
 
-  private async checkVoucherExpiredAndSetVoucher(voucherId: string) {
-    try {
-      const resultData = {
-        isExpired: false,
-        data: {},
-      };
-      const currentDate = new Date();
-      const currentVoucher = await this.getVoucher(voucherId);
-      const dateNow = this.seperateDateForm(currentDate);
-      const dateVoucher = this.seperateDateForm(currentVoucher.expiredDate);
-      if (dateNow.year <= dateVoucher.year) {
-        if (dateNow.month < dateVoucher.month) {
-          resultData.isExpired = false;
-          resultData.data = currentVoucher;
-        } else if (dateNow.month == dateVoucher.month) {
-          if (dateNow.day <= dateVoucher.day) {
-            resultData.isExpired = false;
-            resultData.data = currentVoucher;
-          } else {
-            //set to true if current date > voucher date;
-            const data = await this.setExpiredVoucher(true, voucherId);
-            resultData.isExpired = true;
-            resultData.data = data;
-          }
-        } else {
-          //set to true if current month > voucher month;
-          const data = await this.setExpiredVoucher(true, voucherId);
-          resultData.isExpired = true;
-          resultData.data = data;
-        }
-      } else {
-        //set to true if current year > voucher year;
-        const data = await this.setExpiredVoucher(true, voucherId);
-        resultData.isExpired = true;
-        resultData.data = data;
-      }
-      return resultData;
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
   private seperateDateForm(date: Date) {
     return {
       year: date.getFullYear(),
@@ -107,6 +71,9 @@ export class VouchersService implements VoucherServicesInterface {
         where: {
           userName,
           isUsed: false,
+          VOUCHERTABLE: {
+            isExpired: false,
+          },
         },
         select: {
           VOUCHERTABLE: {
@@ -215,6 +182,42 @@ export class VouchersService implements VoucherServicesInterface {
         //set to true if current year > voucher year;
         const data = await this.setExpiredVoucher(true, voucherId);
         successFl(res, data, this.MSGFOREXPDATE.expired);
+      }
+    } catch (e) {
+      console.log(e);
+      serverErrorFl(res);
+    }
+  }
+
+  async addUserVoucher(res: Response, req: Request) {
+    try {
+      const header: string = req.headers[TOKEN_HEADER] as string;
+      const { status, msg } = await checkAuth(header, this.prisma, req.path);
+      if (status) {
+        const { usrName, voucherId } = req.body;
+        const relationUsrNameAndVoucher =
+          await this.prisma.vOUCHEROFUSER.findMany({
+            where: {
+              userName: usrName,
+            },
+          });
+        const isExitIndex = relationUsrNameAndVoucher.findIndex((item) => {
+          return item.voucherID === voucherId;
+        });
+        if (isExitIndex == -1) {
+          const data = await this.prisma.vOUCHEROFUSER.create({
+            data: {
+              userName: usrName,
+              voucherID: voucherId,
+              isUsed: false,
+            },
+          });
+          successFl(res, { data, authMsg: msg });
+        } else {
+          failureFl(res, 404, "This voucher has been added to this user...");
+        }
+      } else {
+        failureFl(res, 404, msg);
       }
     } catch (e) {
       console.log(e);

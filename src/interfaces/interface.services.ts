@@ -6,5 +6,6 @@ interface VoucherServicesInterface {
     addVoucher(res: Response, req: Request),
     deleteVoucher(res: Response, req: Request),
     checkVoucherExpired(res: Response, req: Request),
+    addUserVoucher(res: Response, req: Request)
 }
 export {VoucherServicesInterface}

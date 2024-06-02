@@ -64,9 +64,9 @@ model VOUCHERTABLE {
 }
 
 model ROLE {
-  id                 Int                  @id @default(autoincrement())
-  roleName           String               @db.VarChar(20)
-  AUTHORIZATIONTABLE AUTHORIZATIONTABLE[]
+  id        Int         @id @default(autoincrement())
+  roleName  String      @db.VarChar(20)
+  GROUPROLE GROUPROLE[]
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -82,11 +82,20 @@ model VOUCHEROFUSER {
   @@index([voucherID], map: "voucherID")
 }
 
-model AUTHORIZATIONTABLE {
-  AuthorId Int    @id @default(autoincrement())
-  RoleId   Int
-  PathName String @db.VarChar(30)
-  ROLE     ROLE   @relation(fields: [RoleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "AUTHORIZATIONTABLE_ibfk_1")
+model GROUPROLE {
+  Id         Int        @id @default(autoincrement())
+  RoleId     Int
+  GroupId    Int
+  ROLE       ROLE       @relation(fields: [RoleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "GROUPROLE_ibfk_1")
+  GROUPTABLE GROUPTABLE @relation(fields: [GroupId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "GROUPROLE_ibfk_2")
 
+  @@index([GroupId], map: "GroupId")
   @@index([RoleId], map: "RoleId")
+}
+
+model GROUPTABLE {
+  Id        Int         @id @default(autoincrement())
+  PathName  String      @db.VarChar(30)
+  describ   String      @db.VarChar(100)
+  GROUPROLE GROUPROLE[]
 }
