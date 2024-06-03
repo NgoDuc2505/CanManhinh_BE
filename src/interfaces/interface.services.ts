@@ -1,11 +1,12 @@
-import { Request, Response } from "express"
+import { Request, Response } from "express";
 
 interface VoucherServicesInterface {
-    getUserVoucher(res: Response, req: Request),
-    getVoucherList(res: Response, req: Request),
-    addVoucher(res: Response, req: Request),
-    deleteVoucher(res: Response, req: Request),
-    checkVoucherExpired(res: Response, req: Request),
-    addUserVoucher(res: Response, req: Request)
+  getUserVoucher(res: Response, req: Request);
+  getVoucherList(res: Response, req: Request);
+  addVoucher(res: Response, req: Request);
+  deleteVoucher(res: Response, req: Request);
+  checkVoucherExpired(res: Response, req: Request);
+  addUserVoucher(res: Response, req: Request);
+  setVoucherUsed(res: Response, req: Request);
 }
-export {VoucherServicesInterface}
+export { VoucherServicesInterface };

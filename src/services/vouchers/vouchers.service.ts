@@ -1,17 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import { ParamsDictionary } from "express-serve-static-core";
-import { ParsedQs } from "qs";
 import { VoucherServicesInterface } from "src/interfaces/interface.services";
 import {
   failureFl,
   serverErrorFl,
   successFl,
 } from "src/services/Response_config/main";
-import { verifyToken } from "../Global_services/jwtToken_sv";
 import { TOKEN_HEADER } from "src/const/const.type";
-import { IUserTokenDecode } from "src/interfaces/interfaces";
 import checkAuth from "../Authorization/Auth";
 
 @Injectable()
@@ -195,6 +191,7 @@ export class VouchersService implements VoucherServicesInterface {
       const { status, msg } = await checkAuth(header, this.prisma, req.path);
       if (status) {
         const { usrName, voucherId } = req.body;
+        //check is voucher is added to user
         const relationUsrNameAndVoucher =
           await this.prisma.vOUCHEROFUSER.findMany({
             where: {
@@ -214,10 +211,43 @@ export class VouchersService implements VoucherServicesInterface {
           });
           successFl(res, { data, authMsg: msg });
         } else {
-          failureFl(res, 404, "This voucher has been added to this user...");
+          failureFl(res, 400, "This voucher has been added to this user...");
         }
       } else {
         failureFl(res, 404, msg);
+      }
+    } catch (e) {
+      console.log(e);
+      serverErrorFl(res);
+    }
+  }
+
+  async setVoucherUsed(res: Response, req: Request) {
+    try {
+      const { voucherId, usrName } = req.body;
+      const dataVoucherFind = await this.prisma.vOUCHEROFUSER.findMany({
+        where: {
+          voucherID: voucherId,
+          userName: usrName,
+        },
+        select:{
+          idOwn: true,
+          isUsed: true
+        }
+      });
+      if (dataVoucherFind.length != 0) {
+        const idGet = dataVoucherFind[0].idOwn;
+        const setVoucherUsedData = await this.prisma.vOUCHEROFUSER.update({
+          where: {
+            idOwn: idGet,
+          },
+          data: {
+            isUsed: true,
+          },
+        });
+        successFl(res, setVoucherUsedData);
+      } else {
+        failureFl(res, 404, "Undefined voucher...");
       }
     } catch (e) {
       console.log(e);

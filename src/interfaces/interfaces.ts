@@ -30,4 +30,10 @@ interface IUserCreateData {
   dob: Date;
 }
 
-export { IUser, IUserSecure, IUserCreateData, IUserTokenDecode };
+
+export {
+  IUser,
+  IUserSecure,
+  IUserCreateData,
+  IUserTokenDecode
+};

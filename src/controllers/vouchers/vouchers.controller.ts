@@ -37,4 +37,9 @@ export class VouchersController {
   async addUserVoucher(@Res() res: Response, @Req() req: Request) {
     return await this.vouchersService.addUserVoucher(res, req);
   }
+
+  @Put("setVoucherUsed")
+  async setVoucherUsed(@Res() res: Response, @Req() req: Request) {
+    return await this.vouchersService.setVoucherUsed(res, req);
+  }
 }
