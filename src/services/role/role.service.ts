@@ -31,6 +31,25 @@ export class RoleService implements RoleInterface {
     }
   };
 
+  private findGroupRole = async (roleId: number, groupId: number) => {
+    const dataFind = await this.prisma.gROUPROLE.findMany({
+      where: {
+        RoleId: roleId,
+        GroupId: groupId,
+      },
+      select: {
+        RoleId: true,
+        GROUPTABLE: {
+          select: {
+            PathName: true,
+            describ: true,
+          },
+        },
+      },
+    });
+    return dataFind;
+  };
+
   async addGroup(res: Response, req: Request) {
     try {
       const { pathName, describe } = req.body;
@@ -55,42 +74,15 @@ export class RoleService implements RoleInterface {
   async addGroupRole(res: Response, req: Request) {
     try {
       const { roleId, groupId } = req.body;
-      const dataFind = await this.prisma.gROUPROLE.findMany({
-        where: {
-          RoleId: roleId,
-          GroupId: groupId,
-        },
-        select: {
-          GROUPTABLE: {
-            select: {
-              PathName: true,
-              describ: true,
-            },
-          },
-        },
-      });
+      const dataFind = await this.findGroupRole(roleId, groupId);
       if (dataFind.length == 0) {
-        const data = await this.prisma.gROUPROLE.create({
+        await this.prisma.gROUPROLE.create({
           data: {
             RoleId: roleId,
             GroupId: groupId,
           },
         });
-        const dataGetter = await this.prisma.gROUPROLE.findMany({
-          where: {
-            RoleId: roleId,
-            GroupId: groupId,
-          },
-          select: {
-            RoleId: true,
-            GROUPTABLE: {
-              select: {
-                PathName: true,
-                describ: true,
-              },
-            },
-          },
-        });
+        const dataGetter = await this.findGroupRole(roleId, groupId);
         successFl(res, dataGetter);
       } else {
         failureFl(res, 400, "Group role is exit...");

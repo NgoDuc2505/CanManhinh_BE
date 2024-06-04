@@ -40,4 +40,9 @@ export class UsersController {
   async updateUserHandler(@Res() res: Response, @Req() req: Request) {
     return this.userService.updateUser(res, req);
   }
+
+  @Put("updateUserRole")
+  async updateUserRole(@Res() res: Response, @Req() req: Request) {
+    return this.userService.updateUserRole(res, req);
+  }
 }
