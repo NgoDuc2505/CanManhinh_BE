@@ -10,16 +10,22 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
-const users_service_1 = require("./models/users/users.service");
-const users_controller_1 = require("./models/users/users.controller");
+const users_service_1 = require("./services/users/users.service");
+const users_controller_1 = require("./controllers/users/users.controller");
+const vouchers_controller_1 = require("./controllers/vouchers/vouchers.controller");
+const vouchers_service_1 = require("./services/vouchers/vouchers.service");
+const booking_controller_1 = require("./controllers/booking/booking.controller");
+const booking_service_1 = require("./services/booking/booking.service");
+const role_controller_1 = require("./controllers/role/role.controller");
+const role_service_1 = require("./services/role/role.service");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [],
-        controllers: [app_controller_1.AppController, users_controller_1.UsersController],
-        providers: [app_service_1.AppService, users_service_1.UsersService],
+        controllers: [app_controller_1.AppController, users_controller_1.UsersController, vouchers_controller_1.VouchersController, booking_controller_1.BookingController, role_controller_1.RoleController],
+        providers: [app_service_1.AppService, users_service_1.UsersService, vouchers_service_1.VouchersService, booking_service_1.BookingService, role_service_1.RoleService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

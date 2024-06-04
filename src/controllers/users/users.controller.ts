@@ -1,7 +1,7 @@
 import { Controller, Get, Header, Post, Put, Req, Res } from "@nestjs/common";
-import { UsersService } from "./users.service";
 import { Response, Request } from "express";
-import { success, failed } from "src/Response_config/main";
+import { success, failed } from "src/services/Response_config/main";
+import { UsersService } from "src/services/users/users.service";
 
 @Controller("users")
 export class UsersController {
@@ -39,5 +39,10 @@ export class UsersController {
   @Header("content-type", "application/json")
   async updateUserHandler(@Res() res: Response, @Req() req: Request) {
     return this.userService.updateUser(res, req);
+  }
+
+  @Put("updateUserRole")
+  async updateUserRole(@Res() res: Response, @Req() req: Request) {
+    return this.userService.updateUserRole(res, req);
   }
 }

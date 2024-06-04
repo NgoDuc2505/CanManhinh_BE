@@ -1,3 +1,7 @@
 const TOKEN = "token_login";
 const TOKEN_HEADER = "token";
-export { TOKEN, TOKEN_HEADER };
+const ROLE = {
+  admin: 1,
+  user: 2,
+};
+export { TOKEN, TOKEN_HEADER, ROLE };

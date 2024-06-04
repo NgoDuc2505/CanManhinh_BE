@@ -3,13 +3,22 @@ import { IUserSecure, IUserTokenDecode } from "src/interfaces/interfaces";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { Request, Response } from "express";
-import { failureFl, serverErrorFl, successFl } from "src/Response_config/main";
-import { createToken, verifyToken } from "src/Global_services/jwtToken_sv";
+import {
+  failureFl,
+  serverErrorFl,
+  successFl,
+} from "src/services/Response_config/main";
+import {
+  createToken,
+  verifyToken,
+} from "src/services/Global_services/jwtToken_sv";
 import { TOKEN, TOKEN_HEADER } from "src/const/const.type";
+import UserInterface from "src/interfaces/interface.user";
+import checkAuth from "../Authorization/Auth";
 const prisma = new PrismaClient();
 
 @Injectable()
-export class UsersService {
+export class UsersService implements UserInterface {
   private salt = 10;
   private exclude(field: string) {
     const dataChecker = {
@@ -45,7 +54,7 @@ export class UsersService {
     return { data: null, isExit: false };
   }
 
-  private async findDetailUserByUserName(usrNm:string){
+  private async findDetailUserByUserName(usrNm: string) {
     return await prisma.uSERTABLE.findUnique({
       where: {
         userName: usrNm,
@@ -173,6 +182,37 @@ export class UsersService {
         failureFl(res, 400, "Invalid token, you not allow to do this...!");
       }
     } catch (e) {
+      serverErrorFl(res);
+    }
+  }
+
+  async updateUserRole(res: Response, req: Request) {
+    try {
+      const { usrName, roleName } = req.body;
+      const token: string = req.headers[TOKEN_HEADER] as string;
+      const userData = await this.isUserExited(usrName);
+      const isAuth = await checkAuth(token, prisma, req.path);
+      console.log(isAuth);
+      if (userData.isExit) {
+        if (isAuth.status) {
+          const roleUpdate = roleName === "ADMIN" ? 1 : 2;
+          const data = await prisma.uSERTABLE.update({
+            where: {
+              userName: usrName,
+            },
+            data: {
+              roleID: roleUpdate,
+            },
+          });
+          successFl(res, data);
+        } else {
+          failureFl(res, 400, isAuth.msg);
+        }
+      } else {
+        failureFl(res, 400, "Invalid username...");
+      }
+    } catch (e) {
+      console.log(e);
       serverErrorFl(res);
     }
   }
