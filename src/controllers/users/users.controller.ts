@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Post, Put, Req, Res } from "@nestjs/common";
+import { Controller, Get, Post, Put, Req, Res } from "@nestjs/common";
 import { Response, Request } from "express";
 import { success, failed } from "src/services/Response_config/main";
 import { UsersService } from "src/services/users/users.service";
@@ -36,7 +36,7 @@ export class UsersController {
   }
 
   @Put("updateUser/:usrName")
-  @Header("content-type", "application/json")
+  // @Header("content-type", "application/json")
   async updateUserHandler(@Res() res: Response, @Req() req: Request) {
     return this.userService.updateUser(res, req);
   }
