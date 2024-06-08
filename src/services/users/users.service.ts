@@ -42,7 +42,7 @@ export class UsersService implements UserInterface {
     return await bcrypt.compare(pass, hash);
   }
 
-  private async isUserExited(usrName: string) {
+  static async isUserExited(usrName: string) {
     const data = await prisma.uSERTABLE.findUnique({
       where: {
         userName: usrName,
@@ -98,7 +98,7 @@ export class UsersService implements UserInterface {
     const hashedPass = await this.hashPass(password);
     const currentDate = new Date().toISOString();
     try {
-      const { isExit } = await this.isUserExited(userName);
+      const { isExit } = await UsersService.isUserExited(userName);
       if (!isExit) {
         const rs = await prisma.uSERTABLE.create({
           data: {
@@ -124,7 +124,7 @@ export class UsersService implements UserInterface {
   async loginUser(res: Response, req: Request) {
     const { userName, passWord } = req.body;
     try {
-      const { isExit, data } = await this.isUserExited(userName);
+      const { isExit, data } = await UsersService.isUserExited(userName);
       if (isExit) {
         const { password } = data;
         const isVerify = await this.checkPass(passWord, password);
@@ -137,7 +137,7 @@ export class UsersService implements UserInterface {
             secure: true,
             maxAge: 60 * 60 * 1000,
           });
-          successFl(res, { token, roleId: data.roleID }, "Success login...");
+          successFl(res, { token, data }, "Success login...");
         } else {
           failureFl(res, 400, "Invalid password...!");
         }
@@ -153,8 +153,10 @@ export class UsersService implements UserInterface {
   async updateUser(res: Response, req: Request) {
     try {
       const reqH: string = req.headers[TOKEN_HEADER] as string;
+      console.log(req.headers);
       const { usrName } = req.params;
       const { phone, dob, password, address } = req.body;
+      console.log(req.body);
       const userDecodeToken: IUserTokenDecode = verifyToken(
         reqH,
       ) as IUserTokenDecode;
@@ -182,6 +184,7 @@ export class UsersService implements UserInterface {
         failureFl(res, 400, "Invalid token, you not allow to do this...!");
       }
     } catch (e) {
+      console.log(e)
       serverErrorFl(res);
     }
   }
@@ -190,7 +193,7 @@ export class UsersService implements UserInterface {
     try {
       const { usrName, roleName } = req.body;
       const token: string = req.headers[TOKEN_HEADER] as string;
-      const userData = await this.isUserExited(usrName);
+      const userData = await UsersService.isUserExited(usrName);
       const isAuth = await checkAuth(token, prisma, req.path);
       console.log(isAuth);
       if (userData.isExit) {
