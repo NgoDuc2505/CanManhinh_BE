@@ -18,6 +18,7 @@ model BOOKINGTABLE {
   isDeleted    Boolean
   voucherID    String?       @db.VarChar(8)
   Total        Int
+  isDone       Boolean?
   USERTABLE    USERTABLE     @relation(fields: [userName], references: [userName], onDelete: NoAction, onUpdate: NoAction, map: "BOOKINGTABLE_ibfk_1")
   VOUCHERTABLE VOUCHERTABLE? @relation(fields: [voucherID], references: [voucherID], onDelete: NoAction, onUpdate: NoAction, map: "BOOKINGTABLE_ibfk_2")
 

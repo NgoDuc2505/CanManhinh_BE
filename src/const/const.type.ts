@@ -12,7 +12,9 @@ const MSG_GLOBAL = {
     inValidToken: "Invalid token, you not allow to do this...!",
     invalidUserName: "Invalid Username...",
     notAllow: "Account permissions are not allowed...",
-    invalidVoucher: "Invalid voucher..."
+    invalidVoucher: "Invalid voucher...",
+    invalidBookingId: "Invalid booking id...",
+    notAAdmin: "This account is not admin..."
   }
 }
 export { TOKEN, TOKEN_HEADER, ROLE, MSG_GLOBAL };

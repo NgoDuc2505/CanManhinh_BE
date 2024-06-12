@@ -11,6 +11,8 @@ declare const MSG_GLOBAL: {
         invalidUserName: string;
         notAllow: string;
         invalidVoucher: string;
+        invalidBookingId: string;
+        notAAdmin: string;
     };
 };
 export { TOKEN, TOKEN_HEADER, ROLE, MSG_GLOBAL };
