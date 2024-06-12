@@ -28,7 +28,7 @@ export class VouchersController {
     return await this.vouchersService.checkVoucherExpired(res, req);
   }
 
-  @Get("userVoucher")
+  @Get("userVoucher/:userName")
   async getUserVoucher(@Res() res: Response, @Req() req: Request) {
     return await this.vouchersService.getUserVoucher(res, req);
   }

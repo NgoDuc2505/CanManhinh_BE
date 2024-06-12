@@ -7,8 +7,10 @@ import {
   serverErrorFl,
   successFl,
 } from "src/services/Response_config/main";
-import { TOKEN_HEADER } from "src/const/const.type";
+import { MSG_GLOBAL, ROLE, TOKEN_HEADER } from "src/const/const.type";
 import checkAuth from "../Authorization/Auth";
+import { verifyToken } from "../Global_services/jwtToken_sv";
+import { IUserTokenDecode } from "src/interfaces/interfaces";
 
 @Injectable()
 export class VouchersService implements VoucherServicesInterface {
@@ -62,7 +64,7 @@ export class VouchersService implements VoucherServicesInterface {
 
   async getUserVoucher(res: Response, req: Request) {
     try {
-      const { userName } = req.body;
+      const { userName } = req.params;
       const data = await this.prisma.vOUCHEROFUSER.findMany({
         where: {
           userName,
@@ -77,6 +79,7 @@ export class VouchersService implements VoucherServicesInterface {
               voucherID: true,
               voucherName: true,
               expiredDate: true,
+              valuesVoucher: true,
             },
           },
         },
@@ -97,14 +100,16 @@ export class VouchersService implements VoucherServicesInterface {
 
   async getVoucherList(res: Response, req: Request) {
     try {
-      const { isGetExpired } = req.body;
-      const isExpiredParam = isGetExpired ? true : false;
-      const data = await this.prisma.vOUCHERTABLE.findMany({
-        where: {
-          isExpired: isExpiredParam,
-        },
-      });
-      successFl(res, data);
+      const reqH: string = req.headers[TOKEN_HEADER] as string;
+      const userDecodeToken: IUserTokenDecode = verifyToken(
+        reqH,
+      ) as IUserTokenDecode;
+      if (userDecodeToken && userDecodeToken.roleID == ROLE.admin) {
+        const data = await this.prisma.vOUCHERTABLE.findMany();
+        successFl(res, data);
+      } else {
+        failureFl(res, 400, MSG_GLOBAL.error.notAllow);
+      }
     } catch (e) {
       console.log(e);
       serverErrorFl(res);
@@ -230,10 +235,10 @@ export class VouchersService implements VoucherServicesInterface {
           voucherID: voucherId,
           userName: usrName,
         },
-        select:{
+        select: {
           idOwn: true,
-          isUsed: true
-        }
+          isUsed: true,
+        },
       });
       if (dataVoucherFind.length != 0) {
         const idGet = dataVoucherFind[0].idOwn;

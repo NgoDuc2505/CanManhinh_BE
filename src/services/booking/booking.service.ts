@@ -15,6 +15,42 @@ import { verifyToken } from "../Global_services/jwtToken_sv";
 @Injectable()
 export class BookingService implements BookingInterface {
   private prisma = new PrismaClient();
+
+  private checkTokenMapUsrName(token: string, usrName: string) {
+    const userDecodeToken: IUserTokenDecode = verifyToken(
+      token,
+    ) as IUserTokenDecode;
+    if (userDecodeToken && userDecodeToken.userName === usrName) {
+      return {
+        data: userDecodeToken,
+        status: true,
+      };
+    } else {
+      return {
+        data: userDecodeToken,
+        status: false,
+      };
+    }
+  }
+  private async isExitBookingId(bookingId: string) {
+    const bookingIdNumberConverter = Number.parseInt(bookingId);
+    const isExitrBookingId = await this.prisma.bOOKINGTABLE.findUnique({
+      where: {
+        bookingID: bookingIdNumberConverter,
+      },
+    });
+    if (isExitrBookingId) {
+      return {
+        data: isExitrBookingId,
+        status: true,
+      };
+    } else {
+      return {
+        data: isExitrBookingId,
+        status: false,
+      };
+    }
+  }
   private async getBookingListByUsrName(usrName: string) {
     const dataList = await this.prisma.bOOKINGTABLE.findMany({
       where: {
@@ -160,11 +196,12 @@ export class BookingService implements BookingInterface {
   async getBookingList(res: Response, req: Request) {
     try {
       const reqH: string = req.headers[TOKEN_HEADER] as string;
-      const { usrName } = req.body;
+      const { usrName } = req.params;
       const userDecodeToken: IUserTokenDecode = verifyToken(
         reqH,
       ) as IUserTokenDecode;
-      if (userDecodeToken.userName === usrName) {
+      console.log("userDecodeToken", userDecodeToken);
+      if (userDecodeToken && userDecodeToken.userName === usrName) {
         if (userDecodeToken.roleID == ROLE.admin) {
           const data = await this.prisma.bOOKINGTABLE.findMany();
           successFl(res, data);
@@ -188,11 +225,9 @@ export class BookingService implements BookingInterface {
   async getBookingListUser(res: Response, req: Request) {
     try {
       const reqH: string = req.headers[TOKEN_HEADER] as string;
-      const { usrName } = req.body;
-      const userDecodeToken: IUserTokenDecode = verifyToken(
-        reqH,
-      ) as IUserTokenDecode;
-      if (userDecodeToken.userName === usrName) {
+      const { usrName } = req.params;
+      const dataTokenChecker = this.checkTokenMapUsrName(reqH, usrName);
+      if (dataTokenChecker.status) {
         const data = await this.prisma.bOOKINGTABLE.findMany({
           where: {
             userName: usrName,
@@ -201,6 +236,7 @@ export class BookingService implements BookingInterface {
         });
         successFl(res, data);
       } else {
+        console.log("usrName", usrName);
         const isExitUser = await UsersService.isUserExited(usrName);
         if (isExitUser.isExit) {
           failureFl(res, 400, MSG_GLOBAL.error.inValidToken);
@@ -214,7 +250,96 @@ export class BookingService implements BookingInterface {
     }
   }
 
-  async delBooking(res: Response, req: Request) {}
-
+  async delBooking(res: Response, req: Request) {
+    try {
+      const { bookingId } = req.params;
+      const reqH: string = req.headers[TOKEN_HEADER] as string;
+      const dataBookingIdChecker = await this.isExitBookingId(bookingId);
+      const userDecodeToken: IUserTokenDecode = verifyToken(
+        reqH,
+      ) as IUserTokenDecode;
+      if (dataBookingIdChecker.status) {
+        if (userDecodeToken.roleID === ROLE.admin) {
+          successFl(res, { bookingId, reqH });
+        } else {
+          failureFl(res, 404, MSG_GLOBAL.error.notAAdmin);
+        }
+      } else {
+        failureFl(res, 404, MSG_GLOBAL.error.invalidBookingId);
+      }
+    } catch (e) {
+      console.log(e);
+      serverErrorFl(res);
+    }
+  }
+  async setIsDone(res: Response, req: Request) {
+    try {
+      const reqH: string = req.headers[TOKEN_HEADER] as string;
+      const { usrName, bookingId, status } = req.body;
+      const userDecodeToken: IUserTokenDecode = verifyToken(
+        reqH,
+      ) as IUserTokenDecode;
+      if (userDecodeToken && userDecodeToken.userName === usrName) {
+        if (userDecodeToken.roleID == ROLE.admin) {
+          const data = await this.prisma.bOOKINGTABLE.update({
+            where:{
+              bookingID: +bookingId
+            },
+            data:{
+              isDone: status === "true" ? true : null
+            }
+          });
+          const dataAfterUpdate = await this.prisma.bOOKINGTABLE.findMany();
+          successFl(res, {data, dataAfterUpdate});
+        } else {
+          failureFl(res, 400, MSG_GLOBAL.error.notAllow);
+        }
+      } else {
+        const isExitUser = await UsersService.isUserExited(usrName);
+        if (isExitUser.isExit) {
+          failureFl(res, 400, MSG_GLOBAL.error.inValidToken);
+        } else {
+          failureFl(res, 400, MSG_GLOBAL.error.invalidUserName);
+        }
+      }
+    } catch (e) {
+      console.log(e);
+      serverErrorFl(res);
+    }
+  }
   async getIncomeMonth(res: Response, req: Request) {}
+
+  async setIsDelBooking(res: Response, req: Request) {
+    try {
+      const { bookingId } = req.params;
+      const reqH: string = req.headers[TOKEN_HEADER] as string;
+      const { usrName } = req.body;
+      const tokenCheckerData = this.checkTokenMapUsrName(reqH, usrName);
+      const bookingIdCheckerData = await this.isExitBookingId(bookingId);
+      if (bookingIdCheckerData.status) {
+        if (tokenCheckerData.status) {
+          if (bookingIdCheckerData.data.userName === usrName) {
+            const data = await this.prisma.bOOKINGTABLE.update({
+              where: {
+                bookingID: Number.parseInt(bookingId),
+              },
+              data: {
+                isDeleted: true,
+              },
+            });
+            successFl(res, data);
+          } else {
+            failureFl(res, 400, MSG_GLOBAL.error.notAllow);
+          }
+        } else {
+          failureFl(res, 400, MSG_GLOBAL.error.inValidToken);
+        }
+      } else {
+        failureFl(res, 400, MSG_GLOBAL.error.invalidBookingId);
+      }
+    } catch (e) {
+      console.log(e);
+      serverErrorFl(res);
+    }
+  }
 }

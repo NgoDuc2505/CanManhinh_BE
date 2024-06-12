@@ -63,7 +63,7 @@ export class RoleService implements RoleInterface {
         });
         successFl(res, data);
       } else {
-        failureFl(res, 400, "path name is exit...h");
+        failureFl(res, 400, "path name is exit...");
       }
     } catch (e) {
       console.log(e);
